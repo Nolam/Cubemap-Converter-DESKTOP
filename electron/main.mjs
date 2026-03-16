@@ -6,8 +6,14 @@ import http from "http";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 let mainWindow = null;
+let splashWindow = null;
 let serverPort = 0;
 let serverStarted = false;
+
+const gotLock = app.requestSingleInstanceLock();
+if (!gotLock) {
+  app.quit();
+}
 
 function findFreePort() {
   return new Promise((resolve, reject) => {
@@ -96,6 +102,10 @@ function createWindow() {
   });
 
   mainWindow.once("ready-to-show", () => {
+    if (splashWindow) {
+      splashWindow.close();
+      splashWindow = null;
+    }
     mainWindow.show();
   });
 
@@ -126,7 +136,38 @@ ipcMain.handle("select-save-path", async (_event, defaultName, ext) => {
   return result.canceled ? null : result.filePath;
 });
 
+function createSplash() {
+  splashWindow = new BrowserWindow({
+    width: 400,
+    height: 220,
+    frame: false,
+    transparent: false,
+    resizable: false,
+    movable: false,
+    center: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    icon: path.join(__dirname, "..", "build", process.platform === "win32" ? "icon.ico" : "icon.png"),
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
+  });
+  splashWindow.loadFile(path.join(__dirname, "splash.html"));
+  splashWindow.on("closed", () => {
+    splashWindow = null;
+  });
+}
+
+app.on("second-instance", () => {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+  }
+});
+
 app.on("ready", async () => {
+  createSplash();
   try {
     await startServer();
     createWindow();
