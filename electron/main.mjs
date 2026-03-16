@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell } from "electron";
+import { app, BrowserWindow, dialog, shell } from "electron";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import http from "http";
@@ -101,6 +101,15 @@ function createWindow() {
   });
 
   mainWindow.setMenuBarVisibility(false);
+
+  mainWindow.webContents.session.on("will-download", (event, item) => {
+    const filename = item.getFilename();
+    const ext = path.extname(filename).slice(1);
+    item.setSaveDialogOptions({
+      defaultPath: filename,
+      filters: [{ name: ext.toUpperCase(), extensions: [ext] }],
+    });
+  });
 }
 
 app.on("ready", async () => {
