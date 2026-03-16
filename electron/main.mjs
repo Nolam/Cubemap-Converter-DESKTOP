@@ -1,6 +1,6 @@
 import { app, BrowserWindow, shell } from "electron";
 import path from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 import http from "http";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -56,7 +56,7 @@ async function startServer() {
   process.env.USER_DATA_PATH = app.getPath("userData");
 
   const serverPath = path.join(__dirname, "..", "dist", "index.cjs");
-  await import(`file://${serverPath}`);
+  await import(pathToFileURL(serverPath).href);
 
   await waitForServer(serverPort);
   serverStarted = true;
