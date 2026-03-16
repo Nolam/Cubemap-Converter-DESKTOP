@@ -114,7 +114,6 @@ setInterval(() => {
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 512 * 1024 * 1024 },
 });
 
 interface ProcessingStep {
@@ -428,8 +427,8 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Session not found or expired" });
       }
 
-      const width = Math.min(Math.max(64, outputWidth || 2048), 16384);
-      const height = Math.min(Math.max(32, outputHeight || 1024), 8192);
+      const width = Math.max(64, outputWidth || 2048);
+      const height = Math.max(32, outputHeight || 1024);
 
       const axisSuffix = axisConfig
         ? `_${axisConfig.presetId}_${axisConfig.handedness}_${Object.values(axisConfig.axisMapping).join("-")}`
