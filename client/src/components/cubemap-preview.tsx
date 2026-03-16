@@ -141,11 +141,6 @@ export function CubemapPreview({ sessionId, faces, faceSize, axisMapping, upload
             <FaceCard key={face} sessionId={sessionId} face={face} compact={compact} />
           ))}
         </div>
-        {compact && faceSize > 0 && (
-          <p className="text-[11px] text-muted-foreground text-center">
-            {faceSize} x {faceSize} per face
-          </p>
-        )}
       </div>
     );
   }
@@ -190,11 +185,6 @@ export function CubemapPreview({ sessionId, faces, faceSize, axisMapping, upload
           );
         })}
       </div>
-      {compact && faceSize > 0 && (
-        <p className="text-[11px] text-muted-foreground text-center">
-          {faceSize} x {faceSize} per face
-        </p>
-      )}
     </div>
   );
 }
