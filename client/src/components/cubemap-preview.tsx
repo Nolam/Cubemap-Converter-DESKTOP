@@ -98,9 +98,10 @@ interface CubemapPreviewProps {
   faceSize: number;
   axisMapping?: AxisMapping;
   uploadMode?: "single" | "individual";
+  compact?: boolean;
 }
 
-export function CubemapPreview({ sessionId, faces, faceSize, axisMapping, uploadMode }: CubemapPreviewProps) {
+export function CubemapPreview({ sessionId, faces, faceSize, axisMapping, uploadMode, compact }: CubemapPreviewProps) {
   const corrections = useMemo(() => {
     if (!axisMapping || !uploadMode) return null;
     return getDdsFaceCorrections(axisMapping, uploadMode);
@@ -122,7 +123,36 @@ export function CubemapPreview({ sessionId, faces, faceSize, axisMapping, upload
 
   if (!axisMapping) {
     return (
-      <div className="space-y-3">
+      <div className={compact ? "space-y-2" : "space-y-3"}>
+        {!compact && (
+          <div className="flex items-center justify-between gap-4">
+            <h3 className="text-sm font-medium" data-testid="text-preview-title">
+              Cubemap Face Preview
+            </h3>
+            {faceSize > 0 && (
+              <span className="text-xs text-muted-foreground">
+                {faceSize} x {faceSize} per face
+              </span>
+            )}
+          </div>
+        )}
+        <div className={`grid ${compact ? "grid-cols-3 gap-1" : "grid-cols-3 sm:grid-cols-6 gap-2"}`}>
+          {faces.map((face) => (
+            <FaceCard key={face} sessionId={sessionId} face={face} compact={compact} />
+          ))}
+        </div>
+        {compact && faceSize > 0 && (
+          <p className="text-[11px] text-muted-foreground text-center">
+            {faceSize} x {faceSize} per face
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className={compact ? "space-y-1" : "space-y-3"}>
+      {!compact && (
         <div className="flex items-center justify-between gap-4">
           <h3 className="text-sm font-medium" data-testid="text-preview-title">
             Cubemap Face Preview
@@ -133,28 +163,8 @@ export function CubemapPreview({ sessionId, faces, faceSize, axisMapping, upload
             </span>
           )}
         </div>
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-          {faces.map((face) => (
-            <FaceCard key={face} sessionId={sessionId} face={face} />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between gap-4">
-        <h3 className="text-sm font-medium" data-testid="text-preview-title">
-          Cubemap Face Preview
-        </h3>
-        {faceSize > 0 && (
-          <span className="text-xs text-muted-foreground">
-            {faceSize} x {faceSize} per face
-          </span>
-        )}
-      </div>
-      <div className="grid grid-cols-4 gap-1.5" style={{ gridTemplateRows: "repeat(3, 1fr)" }}>
+      )}
+      <div className={`grid grid-cols-4 ${compact ? "gap-0.5" : "gap-1.5"}`} style={{ gridTemplateRows: "repeat(3, 1fr)" }}>
         {Array.from({ length: 12 }).map((_, idx) => {
           const row = Math.floor(idx / 4);
           const col = idx % 4;
@@ -175,10 +185,16 @@ export function CubemapPreview({ sessionId, faces, faceSize, axisMapping, upload
               face={face}
               directionLabel={slot.label}
               transform={transform}
+              compact={compact}
             />
           );
         })}
       </div>
+      {compact && faceSize > 0 && (
+        <p className="text-[11px] text-muted-foreground text-center">
+          {faceSize} x {faceSize} per face
+        </p>
+      )}
     </div>
   );
 }
@@ -188,11 +204,13 @@ function FaceCard({
   face,
   directionLabel,
   transform,
+  compact,
 }: {
   sessionId: string;
   face: CubemapFaceName;
   directionLabel?: string;
   transform?: string;
+  compact?: boolean;
 }) {
   return (
     <Card
@@ -206,14 +224,14 @@ function FaceCard({
         loading="lazy"
         style={transform ? { transform } : undefined}
       />
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent rounded-b-md p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-        <p className="text-[10px] text-white font-medium text-center leading-tight">
+      <div className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent rounded-b-md ${compact ? "p-0.5" : "p-1"} opacity-0 group-hover:opacity-100 transition-opacity duration-150`}>
+        <p className={`${compact ? "text-[8px]" : "text-[10px]"} text-white font-medium text-center leading-tight`}>
           {cubemapFaceLabels[face]}
         </p>
       </div>
       {directionLabel && (
-        <div className="absolute top-0 left-0 bg-black/50 rounded-br-md px-1.5 py-0.5">
-          <p className="text-[10px] text-white font-medium">{directionLabel}</p>
+        <div className={`absolute top-0 left-0 bg-black/50 rounded-br-md ${compact ? "px-1 py-px" : "px-1.5 py-0.5"}`}>
+          <p className={`${compact ? "text-[8px]" : "text-[10px]"} text-white font-medium`}>{directionLabel}</p>
         </div>
       )}
     </Card>

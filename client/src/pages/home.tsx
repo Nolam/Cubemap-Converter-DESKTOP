@@ -7,7 +7,6 @@ import { WelcomePopup } from "@/components/welcome-popup";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { RotateCcw, Box, ArrowRight, Sun, Moon } from "lucide-react";
 import type { UploadResult, OutputFormat } from "@shared/schema";
 import { defaultAxisConfig, type AxisConfig } from "@shared/schema";
@@ -199,7 +198,7 @@ export default function Home() {
           </div>
         </div>
       </header>
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className={`max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 ${uploadResult ? "py-4" : "py-8"}`}>
         {!uploadResult ? (
           <div className="space-y-8">
             <div className="text-center max-w-2xl mx-auto space-y-3">
@@ -242,68 +241,69 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between gap-4 flex-wrap">
-              <div>
-                <h2 className="text-xl font-semibold tracking-tight" data-testid="text-upload-title">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <h2 className="text-lg font-semibold tracking-tight" data-testid="text-upload-title">
                   Cubemap Loaded
                 </h2>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  {uploadResult.mode === "single"
-                    ? "Single DDS file with all cubemap faces"
-                    : `${uploadResult.faces.length} individual face files loaded`}
-                  {uploadResult.faceSize > 0 && (
-                    <span> &middot; {uploadResult.faceSize}x{uploadResult.faceSize}px per face</span>
-                  )}
-                  {uploadResult.fileInfo && (
-                    <span> &middot; {uploadResult.fileInfo.inputFormat} &middot; {uploadResult.fileInfo.bitDepth} {uploadResult.fileInfo.channels}</span>
-                  )}
-                </p>
+                <Badge variant="secondary" data-testid="badge-upload-mode">
+                  {uploadResult.mode === "single" ? "Single DDS" : "Individual Files"}
+                </Badge>
               </div>
-              <Badge variant="secondary" data-testid="badge-upload-mode">
-                {uploadResult.mode === "single" ? "Single DDS" : "Individual Files"}
-              </Badge>
+              <p className="text-xs text-muted-foreground">
+                {uploadResult.mode === "single"
+                  ? "Single DDS file"
+                  : `${uploadResult.faces.length} face files`}
+                {uploadResult.faceSize > 0 && (
+                  <span> &middot; {uploadResult.faceSize}x{uploadResult.faceSize}px</span>
+                )}
+                {uploadResult.fileInfo && (
+                  <span> &middot; {uploadResult.fileInfo.inputFormat} &middot; {uploadResult.fileInfo.bitDepth} {uploadResult.fileInfo.channels}</span>
+                )}
+              </p>
             </div>
 
-            <Separator />
+            <div className="grid grid-cols-[2fr_3fr] gap-6 items-start">
+              <Card className="p-3">
+                <CubemapPreview
+                  sessionId={uploadResult.sessionId}
+                  faces={uploadResult.faces}
+                  faceSize={uploadResult.faceSize}
+                  axisMapping={axisConfig.axisMapping}
+                  uploadMode={uploadResult.mode}
+                  compact
+                />
+              </Card>
 
-            <CubemapPreview
-              sessionId={uploadResult.sessionId}
-              faces={uploadResult.faces}
-              faceSize={uploadResult.faceSize}
-              axisMapping={axisConfig.axisMapping}
-              uploadMode={uploadResult.mode}
-            />
+              <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-10rem)]">
+                <AxisSettings
+                  config={axisConfig}
+                  onChange={handleAxisConfigChange}
+                />
 
-            <Separator />
-
-            <AxisSettings
-              config={axisConfig}
-              onChange={handleAxisConfigChange}
-            />
-
-            <Separator />
-
-            <ConversionPanel
-              uploadResult={uploadResult}
-              isConverting={isConverting}
-              progress={conversionProgress}
-              conversionStage={conversionStage}
-              downloadUrl={downloadUrl}
-              downloadFilename={downloadFilename}
-              error={error}
-              onConvert={handleConvert}
-              onSettingsChange={() => {
-                setDownloadUrl(null);
-                setError(null);
-                setConversionProgress(0);
-              }}
-            />
+                <ConversionPanel
+                  uploadResult={uploadResult}
+                  isConverting={isConverting}
+                  progress={conversionProgress}
+                  conversionStage={conversionStage}
+                  downloadUrl={downloadUrl}
+                  downloadFilename={downloadFilename}
+                  error={error}
+                  onConvert={handleConvert}
+                  onSettingsChange={() => {
+                    setDownloadUrl(null);
+                    setError(null);
+                    setConversionProgress(0);
+                  }}
+                />
+              </div>
+            </div>
           </div>
         )}
       </main>
-      <footer className="border-t mt-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4 text-xs text-muted-foreground">
+      <footer className={`border-t ${uploadResult ? "mt-4" : "mt-16"}`}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4 text-xs text-muted-foreground">
           <span>Designed by David Parrella - <a href="https://www.paypal.com/paypalme/parrella/" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">Click Here</a> to buy me a Coffee! :)</span>
           <span>Supports DDS cubemap formats with HDR data</span>
         </div>
