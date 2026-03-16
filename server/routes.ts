@@ -60,8 +60,9 @@ function channelCountToString(count: number): string {
   return "RGBA";
 }
 
-const UPLOAD_DIR = path.join(process.cwd(), "uploads");
-const OUTPUT_DIR = path.join(process.cwd(), "outputs");
+const BASE_DIR = process.env.USER_DATA_PATH || process.cwd();
+const UPLOAD_DIR = path.join(BASE_DIR, "uploads");
+const OUTPUT_DIR = path.join(BASE_DIR, "outputs");
 
 function cleanDirOnStartup(dir: string) {
   if (fs.existsSync(dir)) {

@@ -1,5 +1,4 @@
 import { app, BrowserWindow, shell } from "electron";
-import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
 import http from "http";
@@ -7,8 +6,8 @@ import http from "http";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 let mainWindow = null;
-let serverProcess = null;
 let serverPort = 0;
+let serverStarted = false;
 
 function findFreePort() {
   return new Promise((resolve, reject) => {
@@ -52,32 +51,15 @@ function waitForServer(port, maxAttempts = 60) {
 async function startServer() {
   serverPort = await findFreePort();
 
+  process.env.PORT = String(serverPort);
+  process.env.NODE_ENV = "production";
+  process.env.USER_DATA_PATH = app.getPath("userData");
+
   const serverPath = path.join(__dirname, "..", "dist", "index.cjs");
-
-  serverProcess = spawn(process.execPath, [serverPath], {
-    env: {
-      ...process.env,
-      NODE_ENV: "production",
-      PORT: String(serverPort),
-    },
-    cwd: path.join(__dirname, ".."),
-    stdio: ["pipe", "pipe", "pipe"],
-  });
-
-  serverProcess.stdout.on("data", (data) => {
-    console.log(`[server] ${data.toString().trim()}`);
-  });
-
-  serverProcess.stderr.on("data", (data) => {
-    console.error(`[server] ${data.toString().trim()}`);
-  });
-
-  serverProcess.on("exit", (code) => {
-    console.log(`Server process exited with code ${code}`);
-    serverProcess = null;
-  });
+  await import(`file://${serverPath}`);
 
   await waitForServer(serverPort);
+  serverStarted = true;
 }
 
 function createWindow() {
@@ -136,18 +118,7 @@ app.on("window-all-closed", () => {
 });
 
 app.on("activate", () => {
-  if (mainWindow === null && serverProcess) {
+  if (mainWindow === null && serverStarted) {
     createWindow();
-  }
-});
-
-app.on("before-quit", () => {
-  if (serverProcess) {
-    serverProcess.kill("SIGTERM");
-    setTimeout(() => {
-      if (serverProcess) {
-        serverProcess.kill("SIGKILL");
-      }
-    }, 3000);
   }
 });
