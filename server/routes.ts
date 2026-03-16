@@ -439,11 +439,19 @@ export async function registerRoutes(
         const cachedFilePath = path.join(OUTPUT_DIR, sessionId, `${cached.outputId}.${cached.ext}`);
         if (fs.existsSync(cachedFilePath)) {
           session.createdAt = Date.now();
+          if (destPath && typeof destPath === "string") {
+            try {
+              fs.copyFileSync(cachedFilePath, destPath);
+            } catch (copyErr: any) {
+              return res.status(500).json({ message: `Failed to save to destination: ${copyErr.message}` });
+            }
+          }
           return res.json({
             success: true,
             cached: true,
             filename: cached.filename,
             downloadUrl: cached.downloadUrl,
+            destPath: destPath || null,
             width: cached.width,
             height: cached.height,
             format: cached.format,

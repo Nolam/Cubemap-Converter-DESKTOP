@@ -61,7 +61,7 @@ export default function Home() {
   const handleBrowseOutputPath = useCallback(
     async (defaultFilename: string, ext: string) => {
       try {
-        const result = await (window as any).electronAPI?.selectSavePath(defaultFilename, ext);
+        const result = await window.electronAPI?.selectSavePath(defaultFilename, ext);
         if (result) {
           setOutputPath(result);
           setSavedDestPath(null);
@@ -139,6 +139,7 @@ export default function Home() {
                     setConversionStage("Complete!");
                     if (event.destPath) {
                       setSavedDestPath(event.destPath);
+                      setOutputPath("");
                     } else {
                       setDownloadUrl(event.downloadUrl);
                     }
@@ -158,7 +159,12 @@ export default function Home() {
           const data = await res.json();
           setConversionProgress(100);
           setConversionStage("Complete!");
-          setDownloadUrl(data.downloadUrl);
+          if (data.destPath) {
+            setSavedDestPath(data.destPath);
+            setOutputPath("");
+          } else {
+            setDownloadUrl(data.downloadUrl);
+          }
           setDownloadFilename(data.filename);
         }
       } catch (err: any) {

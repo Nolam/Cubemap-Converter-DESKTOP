@@ -119,7 +119,7 @@ interface ConversionPanelProps {
   onSettingsChange?: () => void;
 }
 
-const hasElectronAPI = typeof window !== "undefined" && !!(window as any).electronAPI;
+const hasElectronAPI = typeof window !== "undefined" && !!window.electronAPI;
 
 export function ConversionPanel({
   uploadResult,
