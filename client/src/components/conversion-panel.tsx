@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -117,6 +117,7 @@ interface ConversionPanelProps {
   onBrowseOutputPath: (defaultFilename: string, ext: string) => void;
   onConvert: (format: OutputFormat, width: number, height: number) => void;
   onSettingsChange?: () => void;
+  onOutputSettingsChange?: (format: OutputFormat, width: number, height: number) => void;
 }
 
 const hasElectronAPI = typeof window !== "undefined" && !!window.electronAPI;
@@ -134,6 +135,7 @@ export function ConversionPanel({
   onBrowseOutputPath,
   onConvert,
   onSettingsChange,
+  onOutputSettingsChange,
 }: ConversionPanelProps) {
   const maxWidth = useMemo(() => computeMaxWidth(uploadResult.faceSize), [uploadResult.faceSize]);
   const optimalWidth = useMemo(() => computeOptimalWidth(uploadResult.faceSize), [uploadResult.faceSize]);
@@ -148,6 +150,15 @@ export function ConversionPanel({
   const [lockRatio, setLockRatio] = useState(true);
 
   const sliderIndex = nearestTierIndex(width, maxTierIdx);
+
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    onOutputSettingsChange?.(format, width, height);
+  }, [format, width, height]);
 
   const applyWidth = (val: number) => {
     const clamped = Math.max(64, Math.min(16384, val));

@@ -75,6 +75,20 @@ export default function Home() {
     []
   );
 
+  const handleOutputSettingsChange = useCallback(
+    (format: OutputFormat, width: number, height: number) => {
+      setOutputPath((prev) => {
+        if (!prev) return prev;
+        const sep = prev.includes("\\") ? "\\" : "/";
+        const lastSepIdx = prev.lastIndexOf(sep);
+        const dir = lastSepIdx >= 0 ? prev.substring(0, lastSepIdx + 1) : "";
+        const newFilename = `cubemap_hdri_${width}x${height}.${format}`;
+        return dir + newFilename;
+      });
+    },
+    []
+  );
+
   const handleConvert = useCallback(
     async (format: OutputFormat, width: number, height: number) => {
       if (!uploadResult) return;
@@ -288,6 +302,11 @@ export default function Home() {
               </Badge>
             </div>
 
+            <AxisSettings
+              config={axisConfig}
+              onChange={handleAxisConfigChange}
+            />
+
             <div className="grid grid-cols-[2fr_3fr] gap-6 items-start">
               <div className="space-y-2">
                 <Card className="p-3">
@@ -314,13 +333,6 @@ export default function Home() {
               </div>
 
               <div className="overflow-y-auto max-h-[calc(100vh-10rem)]">
-                <AxisSettings
-                  config={axisConfig}
-                  onChange={handleAxisConfigChange}
-                />
-
-                <div className="border-t my-4" />
-
                 <ConversionPanel
                   uploadResult={uploadResult}
                   isConverting={isConverting}
@@ -333,6 +345,7 @@ export default function Home() {
                   outputPath={outputPath}
                   onBrowseOutputPath={handleBrowseOutputPath}
                   onConvert={handleConvert}
+                  onOutputSettingsChange={handleOutputSettingsChange}
                   onSettingsChange={() => {
                     setDownloadUrl(null);
                     setSavedDestPath(null);

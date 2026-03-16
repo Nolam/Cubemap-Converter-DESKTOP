@@ -276,6 +276,88 @@ export function FileUploadZone({ onUploadComplete }: FileUploadZoneProps) {
     ? Math.round((visibleStepCount / allSteps.length) * 100)
     : 0;
 
+  const inlineStatusContent = (
+    <>
+      {uploadStage === "uploading" && (
+        <div className="space-y-3 w-full max-w-xs">
+          <div className="flex items-center gap-3">
+            <FileIcon className="w-5 h-5 text-muted-foreground shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate" data-testid="text-upload-stage">
+                Loading {uploadFileName}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {formatFileSize(uploadFileSize)} &middot; {uploadProgress}%
+              </p>
+            </div>
+          </div>
+          <Progress value={uploadProgress} className="h-2" data-testid="progress-upload" />
+        </div>
+      )}
+
+      {uploadStage === "processing" && (
+        <div className="space-y-3 w-full max-w-xs">
+          <div className="flex items-center gap-3">
+            <Loader2 className="w-5 h-5 text-primary animate-spin shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium" data-testid="text-upload-stage">
+                Processing cubemap data
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Step {visibleStepCount}/{allSteps.length} &middot; {processingPercent}%
+              </p>
+            </div>
+          </div>
+
+          <Progress value={processingPercent} className="h-2" data-testid="progress-processing" />
+
+          <div className="space-y-1.5 max-h-32 overflow-y-auto" data-testid="list-processing-steps">
+            {visibleSteps.map((s, i) => {
+              const isCurrent = i === visibleStepCount - 1 && visibleStepCount < allSteps.length;
+              const isComplete = i < visibleStepCount - 1 || (i === visibleStepCount - 1 && visibleStepCount === allSteps.length);
+              const isError = s.status === "error";
+              return (
+                <div
+                  key={i}
+                  className={`flex items-center gap-2 text-xs transition-all duration-200 ${
+                    isError
+                      ? "text-destructive font-medium"
+                      : isComplete
+                      ? "text-muted-foreground"
+                      : isCurrent
+                      ? "text-foreground font-medium"
+                      : "text-muted-foreground"
+                  }`}
+                  data-testid={`step-${i + 1}`}
+                >
+                  {isError ? (
+                    <AlertCircle className="w-3.5 h-3.5 text-destructive shrink-0" />
+                  ) : isComplete ? (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
+                  ) : isCurrent ? (
+                    <Loader2 className="w-3.5 h-3.5 text-primary animate-spin shrink-0" />
+                  ) : (
+                    <div className="w-3.5 h-3.5 rounded-full border border-muted-foreground/30 shrink-0" />
+                  )}
+                  <span className="truncate">{s.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {uploadStage === "done" && (
+        <div className="flex items-center gap-3">
+          <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
+          <p className="text-sm font-medium" data-testid="text-upload-stage">
+            Processing complete!
+          </p>
+        </div>
+      )}
+    </>
+  );
+
   return (
     <div className="max-w-2xl mx-auto">
       <Tabs value={mode} onValueChange={(v) => setMode(v as "single" | "individual")}>
@@ -292,30 +374,38 @@ export function FileUploadZone({ onUploadComplete }: FileUploadZoneProps) {
 
         <TabsContent value="single" className="mt-4">
           <Card
-            className={`relative border-2 border-dashed transition-colors duration-200 cursor-pointer ${
+            className={`relative border-2 border-dashed transition-colors duration-200 ${
+              isUploading ? "" : "cursor-pointer"
+            } ${
               isDragging
                 ? "border-primary bg-primary/5"
                 : "border-muted-foreground/20"
-            } ${isUploading ? "pointer-events-none opacity-60" : ""}`}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleSingleDrop}
+            }`}
+            onDragOver={!isUploading ? handleDragOver : undefined}
+            onDragLeave={!isUploading ? handleDragLeave : undefined}
+            onDrop={!isUploading ? handleSingleDrop : undefined}
             onClick={() => !isUploading && singleInputRef.current?.click()}
             data-testid="dropzone-single"
           >
             <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-              <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mb-4">
-                <Upload className="w-6 h-6 text-muted-foreground" />
-              </div>
-              <p className="text-sm font-medium mb-1">
-                Drop your DDS cubemap file here
-              </p>
-              <p className="text-xs text-muted-foreground mb-4">
-                or click to browse &middot; Supports .dds files with cubemap faces
-              </p>
-              <Button variant="secondary" size="sm" disabled={isUploading} data-testid="button-browse-single">
-                Browse Files
-              </Button>
+              {isUploading ? (
+                inlineStatusContent
+              ) : (
+                <>
+                  <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mb-4">
+                    <Upload className="w-6 h-6 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm font-medium mb-1">
+                    Drop your DDS cubemap file here
+                  </p>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    or click to browse &middot; Supports .dds files with cubemap faces
+                  </p>
+                  <Button variant="secondary" size="sm" data-testid="button-browse-single">
+                    Browse Files
+                  </Button>
+                </>
+              )}
             </div>
             <input
               ref={singleInputRef}
@@ -377,107 +467,31 @@ export function FileUploadZone({ onUploadComplete }: FileUploadZoneProps) {
             })}
           </div>
 
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs text-muted-foreground">
-                {filledCount}/6 faces selected
-              </p>
-              <p className="text-[11px] text-muted-foreground/70 mt-0.5">
-                You can choose which coordinate system you're using after loading
-              </p>
+          {isUploading ? (
+            <Card className="p-4 space-y-3" data-testid="card-upload-status">
+              {inlineStatusContent}
+            </Card>
+          ) : (
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs text-muted-foreground">
+                  {filledCount}/6 faces selected
+                </p>
+                <p className="text-[11px] text-muted-foreground/70 mt-0.5">
+                  You can choose which coordinate system you're using after loading
+                </p>
+              </div>
+              <Button
+                onClick={uploadIndividualFiles}
+                disabled={filledCount < 6 || isUploading}
+                data-testid="button-upload-individual"
+              >
+                Load All Faces
+              </Button>
             </div>
-            <Button
-              onClick={uploadIndividualFiles}
-              disabled={filledCount < 6 || isUploading}
-              data-testid="button-upload-individual"
-            >
-              Load All Faces
-            </Button>
-          </div>
+          )}
         </TabsContent>
       </Tabs>
-
-      {isUploading && (
-        <Card className="mt-4 p-4 space-y-3" data-testid="card-upload-status">
-          {uploadStage === "uploading" && (
-            <>
-              <div className="flex items-center gap-3">
-                <FileIcon className="w-5 h-5 text-muted-foreground shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate" data-testid="text-upload-stage">
-                    Loading {uploadFileName} ({formatFileSize(uploadFileSize)})
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {uploadProgress}% loaded
-                  </p>
-                </div>
-              </div>
-              <Progress value={uploadProgress} className="h-2" data-testid="progress-upload" />
-            </>
-          )}
-
-          {uploadStage === "processing" && (
-            <>
-              <div className="flex items-center gap-3">
-                <Loader2 className="w-5 h-5 text-primary animate-spin shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium" data-testid="text-upload-stage">
-                    Processing cubemap data
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Step {visibleStepCount}/{allSteps.length} &middot; {processingPercent}%
-                  </p>
-                </div>
-              </div>
-
-              <Progress value={processingPercent} className="h-2" data-testid="progress-processing" />
-
-              <div className="space-y-1.5 max-h-48 overflow-y-auto" data-testid="list-processing-steps">
-                {visibleSteps.map((s, i) => {
-                  const isCurrent = i === visibleStepCount - 1 && visibleStepCount < allSteps.length;
-                  const isComplete = i < visibleStepCount - 1 || (i === visibleStepCount - 1 && visibleStepCount === allSteps.length);
-                  const isError = s.status === "error";
-                  return (
-                    <div
-                      key={i}
-                      className={`flex items-center gap-2 text-xs transition-all duration-200 ${
-                        isError
-                          ? "text-destructive font-medium"
-                          : isComplete
-                          ? "text-muted-foreground"
-                          : isCurrent
-                          ? "text-foreground font-medium"
-                          : "text-muted-foreground"
-                      }`}
-                      data-testid={`step-${i + 1}`}
-                    >
-                      {isError ? (
-                        <AlertCircle className="w-3.5 h-3.5 text-destructive shrink-0" />
-                      ) : isComplete ? (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
-                      ) : isCurrent ? (
-                        <Loader2 className="w-3.5 h-3.5 text-primary animate-spin shrink-0" />
-                      ) : (
-                        <div className="w-3.5 h-3.5 rounded-full border border-muted-foreground/30 shrink-0" />
-                      )}
-                      <span className="truncate">{s.label}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
-
-          {uploadStage === "done" && (
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
-              <p className="text-sm font-medium" data-testid="text-upload-stage">
-                Processing complete!
-              </p>
-            </div>
-          )}
-        </Card>
-      )}
 
       {error && (
         <div className="mt-4 flex items-start gap-2 p-3 rounded-md bg-destructive/10 text-destructive text-sm" data-testid="text-upload-error">
