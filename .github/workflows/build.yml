@@ -35,7 +35,7 @@ jobs:
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
-          name: windows-installer
+          name: windows-portable
           path: release/*.exe
 
   build-mac:
@@ -64,5 +64,5 @@ jobs:
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
-          name: macos-installer
-          path: release/*.dmg
+          name: macos-portable
+          path: release/*.zip

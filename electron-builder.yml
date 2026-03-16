@@ -16,33 +16,19 @@ extraMetadata:
 
 win:
   target:
-    - target: nsis
+    - target: portable
       arch:
         - x64
   icon: null
 
-nsis:
-  oneClick: false
-  allowToChangeInstallationDirectory: true
-  perMachine: true
-
 mac:
   target:
-    - target: dmg
+    - target: zip
       arch:
         - x64
         - arm64
   icon: null
   category: public.app-category.graphics-design
-
-dmg:
-  contents:
-    - x: 130
-      y: 220
-    - x: 410
-      y: 220
-      type: link
-      path: /Applications
 
 linux:
   target:
