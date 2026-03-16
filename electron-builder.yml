@@ -1,0 +1,51 @@
+appId: com.davidparrella.cubemap-to-hdri
+productName: CubeMap to HDRI Converter
+copyright: Copyright (c) David Parrella
+
+directories:
+  output: release
+
+files:
+  - dist/**/*
+  - electron/**/*
+  - node_modules/**/*
+  - package.json
+
+extraMetadata:
+  main: electron/main.mjs
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: null
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  perMachine: true
+
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  icon: null
+  category: public.app-category.graphics-design
+
+dmg:
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
