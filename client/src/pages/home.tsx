@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { FileUploadZone } from "@/components/file-upload-zone";
 import { CubemapPreview } from "@/components/cubemap-preview";
+import { EquirectangularPreview } from "@/components/equirectangular-preview";
 import { ConversionPanel } from "@/components/conversion-panel";
 import { AxisSettings } from "@/components/axis-settings";
 import { WelcomePopup } from "@/components/welcome-popup";
@@ -308,28 +309,34 @@ export default function Home() {
             />
 
             <div className="grid grid-cols-[2fr_3fr] gap-6 items-start">
-              <div className="space-y-2">
-                <Card className="p-3">
-                  <CubemapPreview
-                    sessionId={uploadResult.sessionId}
-                    faces={uploadResult.faces}
-                    faceSize={uploadResult.faceSize}
-                    axisMapping={axisConfig.axisMapping}
-                    uploadMode={uploadResult.mode}
-                    compact
-                  />
-                </Card>
-                <p className="text-xs text-muted-foreground text-center">
-                  {uploadResult.mode === "single"
-                    ? "Single DDS file"
-                    : `${uploadResult.faces.length} face files`}
-                  {uploadResult.faceSize > 0 && (
-                    <span> &middot; {uploadResult.faceSize}x{uploadResult.faceSize}px</span>
-                  )}
-                  {uploadResult.fileInfo && (
-                    <span> &middot; {uploadResult.fileInfo.inputFormat} &middot; {uploadResult.fileInfo.bitDepth} {uploadResult.fileInfo.channels}</span>
-                  )}
-                </p>
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Card className="p-3">
+                    <CubemapPreview
+                      sessionId={uploadResult.sessionId}
+                      faces={uploadResult.faces}
+                      faceSize={uploadResult.faceSize}
+                      axisMapping={axisConfig.axisMapping}
+                      uploadMode={uploadResult.mode}
+                      compact
+                    />
+                  </Card>
+                  <p className="text-xs text-muted-foreground text-center">
+                    {uploadResult.mode === "single"
+                      ? "Single DDS file"
+                      : `${uploadResult.faces.length} face files`}
+                    {uploadResult.faceSize > 0 && (
+                      <span> &middot; {uploadResult.faceSize}x{uploadResult.faceSize}px</span>
+                    )}
+                    {uploadResult.fileInfo && (
+                      <span> &middot; {uploadResult.fileInfo.inputFormat} &middot; {uploadResult.fileInfo.bitDepth} {uploadResult.fileInfo.channels}</span>
+                    )}
+                  </p>
+                </div>
+                <EquirectangularPreview
+                  sessionId={uploadResult.sessionId}
+                  axisConfig={axisConfig}
+                />
               </div>
 
               <div className="overflow-y-auto max-h-[calc(100vh-10rem)]">

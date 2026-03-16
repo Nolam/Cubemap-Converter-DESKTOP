@@ -91,6 +91,7 @@ interface SessionData {
   format: string;
   createdAt: number;
   conversionCache: Map<string, CachedConversion>;
+  previewCache: Map<string, Buffer>;
 }
 
 const sessions = new Map<string, SessionData>();
@@ -185,6 +186,7 @@ export async function registerRoutes(
         format: parsed.format,
         createdAt: Date.now(),
         conversionCache: new Map(),
+        previewCache: new Map(),
       });
 
       steps.push({ label: "Session created successfully", status: "done" });
@@ -318,6 +320,7 @@ export async function registerRoutes(
           format: "Individual",
           createdAt: Date.now(),
           conversionCache: new Map(),
+          previewCache: new Map(),
         });
 
         steps.push({ label: "Session created successfully", status: "done" });
@@ -376,6 +379,76 @@ export async function registerRoutes(
     } catch (err: any) {
       console.error("Preview error:", err);
       return res.status(500).json({ message: "Failed to generate preview" });
+    }
+  });
+
+  app.post("/api/preview-equirect", async (req, res) => {
+    try {
+      const { sessionId, axisConfig: rawAxisConfig } = req.body;
+
+      if (!sessionId) {
+        return res.status(400).json({ message: "Missing sessionId" });
+      }
+
+      const session = sessions.get(sessionId);
+      if (!session) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+
+      let axisConfig: AxisConfig | undefined;
+      if (rawAxisConfig) {
+        const parsed = axisConfigSchema.safeParse(rawAxisConfig);
+        if (!parsed.success) {
+          return res.status(400).json({ message: "Invalid axis configuration" });
+        }
+        axisConfig = parsed.data;
+      }
+
+      const axisSuffix = axisConfig
+        ? `${axisConfig.presetId}_${axisConfig.handedness}_${Object.values(axisConfig.axisMapping).join("-")}`
+        : "default";
+      const cacheKey = `equirect_preview_${axisSuffix}`;
+
+      const cached = session.previewCache.get(cacheKey);
+      if (cached) {
+        session.createdAt = Date.now();
+        res.set("Content-Type", "image/jpeg");
+        res.set("Cache-Control", "public, max-age=60");
+        return res.send(cached);
+      }
+
+      const faces: Float32Array[] = [];
+      for (const name of faceOrder) {
+        const face = session.faces.get(name);
+        if (!face) {
+          return res.status(400).json({ message: `Missing cubemap face: ${name}` });
+        }
+        faces.push(face);
+      }
+
+      const previewWidth = 512;
+      const previewHeight = 256;
+
+      const equirect = cubemapToEquirectangular(
+        faces,
+        session.faceSize,
+        previewWidth,
+        previewHeight,
+        axisConfig,
+        session.mode,
+      );
+
+      const jpegBuffer = await encodeJpeg(equirect, previewWidth, previewHeight, 80);
+
+      session.previewCache.set(cacheKey, jpegBuffer);
+      session.createdAt = Date.now();
+
+      res.set("Content-Type", "image/jpeg");
+      res.set("Cache-Control", "public, max-age=60");
+      return res.send(jpegBuffer);
+    } catch (err: any) {
+      console.error("Equirect preview error:", err);
+      return res.status(500).json({ message: "Failed to generate equirectangular preview" });
     }
   });
 
