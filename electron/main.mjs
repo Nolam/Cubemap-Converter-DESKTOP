@@ -163,6 +163,8 @@ app.on("second-instance", () => {
   if (mainWindow) {
     if (mainWindow.isMinimized()) mainWindow.restore();
     mainWindow.focus();
+  } else if (splashWindow) {
+    splashWindow.focus();
   }
 });
 
