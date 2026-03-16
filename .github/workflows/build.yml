@@ -24,6 +24,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Generate icons
+        run: npx tsx script/gen-icons.ts
+
       - name: Build app
         run: npm run build
 
@@ -52,6 +55,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Generate icons
+        run: npx tsx script/gen-icons.ts
 
       - name: Build app
         run: npm run build

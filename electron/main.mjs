@@ -69,6 +69,7 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     title: "CubeMap to HDRI Converter",
+    icon: path.join(__dirname, "..", "build", process.platform === "win32" ? "icon.ico" : "icon.png"),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
