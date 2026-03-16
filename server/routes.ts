@@ -405,11 +405,14 @@ export async function registerRoutes(
 
   app.post("/api/convert", async (req, res) => {
     try {
-      const { sessionId, outputFormat, outputWidth, outputHeight, axisConfig: rawAxisConfig, destPath } = req.body;
+      const { sessionId, outputFormat, outputWidth, outputHeight, axisConfig: rawAxisConfig, destPath: rawDestPath } = req.body;
 
       if (!sessionId || !outputFormat) {
         return res.status(400).json({ message: "Missing required parameters" });
       }
+
+      const isDesktopMode = process.env.NODE_ENV === "production" && !!process.env.USER_DATA_PATH;
+      const destPath = isDesktopMode && rawDestPath && typeof rawDestPath === "string" ? rawDestPath : undefined;
 
       let axisConfig: AxisConfig | undefined;
       if (rawAxisConfig) {
@@ -439,7 +442,7 @@ export async function registerRoutes(
         const cachedFilePath = path.join(OUTPUT_DIR, sessionId, `${cached.outputId}.${cached.ext}`);
         if (fs.existsSync(cachedFilePath)) {
           session.createdAt = Date.now();
-          if (destPath && typeof destPath === "string") {
+          if (destPath) {
             try {
               fs.copyFileSync(cachedFilePath, destPath);
             } catch (copyErr: any) {
@@ -451,7 +454,7 @@ export async function registerRoutes(
             cached: true,
             filename: cached.filename,
             downloadUrl: cached.downloadUrl,
-            destPath: destPath || null,
+            destPath: destPath ?? null,
             width: cached.width,
             height: cached.height,
             format: cached.format,
@@ -535,7 +538,7 @@ export async function registerRoutes(
       const outputPath = path.join(outputDirPath, `${outputId}.${ext}`);
       fs.writeFileSync(outputPath, encoded);
 
-      if (destPath && typeof destPath === "string") {
+      if (destPath) {
         try {
           fs.copyFileSync(outputPath, destPath);
         } catch (copyErr: any) {
@@ -561,7 +564,7 @@ export async function registerRoutes(
         cached: false,
         filename,
         downloadUrl: `/api/download/${sessionId}/${outputId}.${ext}`,
-        destPath: destPath || null,
+        destPath: destPath ?? null,
         width,
         height,
         format: outputFormat,
