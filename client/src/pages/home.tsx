@@ -19,6 +19,8 @@ export default function Home() {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [downloadFilename, setDownloadFilename] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const [outputPath, setOutputPath] = useState("");
+  const [savedDestPath, setSavedDestPath] = useState<string | null>(null);
   const [axisConfig, setAxisConfig] = useState<AxisConfig>({ ...defaultAxisConfig });
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== "undefined") {
@@ -45,6 +47,8 @@ export default function Home() {
     setDownloadUrl(null);
     setError(null);
     setConversionProgress(0);
+    setOutputPath("");
+    setSavedDestPath(null);
   }, []);
 
   const handleAxisConfigChange = useCallback((newConfig: AxisConfig) => {
@@ -53,6 +57,23 @@ export default function Home() {
     setError(null);
     setConversionProgress(0);
   }, []);
+
+  const handleBrowseOutputPath = useCallback(
+    async (defaultFilename: string, ext: string) => {
+      try {
+        const result = await (window as any).electronAPI?.selectSavePath(defaultFilename, ext);
+        if (result) {
+          setOutputPath(result);
+          setSavedDestPath(null);
+          setDownloadUrl(null);
+          setError(null);
+          setConversionProgress(0);
+        }
+      } catch {
+      }
+    },
+    []
+  );
 
   const handleConvert = useCallback(
     async (format: OutputFormat, width: number, height: number) => {
@@ -63,18 +84,24 @@ export default function Home() {
       setConversionStage("Starting conversion...");
       setError(null);
       setDownloadUrl(null);
+      setSavedDestPath(null);
 
       try {
+        const body: Record<string, any> = {
+          sessionId: uploadResult.sessionId,
+          outputFormat: format,
+          outputWidth: width,
+          outputHeight: height,
+          axisConfig,
+        };
+        if (outputPath) {
+          body.destPath = outputPath;
+        }
+
         const res = await fetch("/api/convert", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sessionId: uploadResult.sessionId,
-            outputFormat: format,
-            outputWidth: width,
-            outputHeight: height,
-            axisConfig,
-          }),
+          body: JSON.stringify(body),
         });
 
         if (!res.ok) {
@@ -110,7 +137,11 @@ export default function Home() {
                   } else if (event.type === "complete") {
                     setConversionProgress(100);
                     setConversionStage("Complete!");
-                    setDownloadUrl(event.downloadUrl);
+                    if (event.destPath) {
+                      setSavedDestPath(event.destPath);
+                    } else {
+                      setDownloadUrl(event.downloadUrl);
+                    }
                     setDownloadFilename(event.filename);
                   } else if (event.type === "error") {
                     throw new Error(event.message || "Conversion failed");
@@ -136,7 +167,7 @@ export default function Home() {
         setIsConverting(false);
       }
     },
-    [uploadResult, axisConfig]
+    [uploadResult, axisConfig, outputPath]
   );
 
   const handleReset = useCallback(() => {
@@ -292,9 +323,13 @@ export default function Home() {
                   downloadUrl={downloadUrl}
                   downloadFilename={downloadFilename}
                   error={error}
+                  savedDestPath={savedDestPath}
+                  outputPath={outputPath}
+                  onBrowseOutputPath={handleBrowseOutputPath}
                   onConvert={handleConvert}
                   onSettingsChange={() => {
                     setDownloadUrl(null);
+                    setSavedDestPath(null);
                     setError(null);
                     setConversionProgress(0);
                   }}

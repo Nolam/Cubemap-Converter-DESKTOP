@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell } from "electron";
+import { app, BrowserWindow, shell, ipcMain, dialog } from "electron";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import http from "http";
@@ -72,6 +72,8 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      sandbox: false,
+      preload: path.join(__dirname, "preload.cjs"),
     },
     show: false,
   });
@@ -111,6 +113,17 @@ function createWindow() {
     });
   });
 }
+
+ipcMain.handle("select-save-path", async (_event, defaultName, ext) => {
+  const filters = ext
+    ? [{ name: ext.toUpperCase(), extensions: [ext] }]
+    : [{ name: "All Files", extensions: ["*"] }];
+  const result = await dialog.showSaveDialog({
+    defaultPath: defaultName || "output",
+    filters,
+  });
+  return result.canceled ? null : result.filePath;
+});
 
 app.on("ready", async () => {
   try {

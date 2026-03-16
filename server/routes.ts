@@ -405,7 +405,7 @@ export async function registerRoutes(
 
   app.post("/api/convert", async (req, res) => {
     try {
-      const { sessionId, outputFormat, outputWidth, outputHeight, axisConfig: rawAxisConfig } = req.body;
+      const { sessionId, outputFormat, outputWidth, outputHeight, axisConfig: rawAxisConfig, destPath } = req.body;
 
       if (!sessionId || !outputFormat) {
         return res.status(400).json({ message: "Missing required parameters" });
@@ -527,6 +527,16 @@ export async function registerRoutes(
       const outputPath = path.join(outputDirPath, `${outputId}.${ext}`);
       fs.writeFileSync(outputPath, encoded);
 
+      if (destPath && typeof destPath === "string") {
+        try {
+          fs.copyFileSync(outputPath, destPath);
+        } catch (copyErr: any) {
+          sendSSE({ type: "error", message: `Failed to save to destination: ${copyErr.message}` });
+          res.end();
+          return;
+        }
+      }
+
       session.conversionCache.set(cacheKey, {
         filename,
         downloadUrl: `/api/download/${sessionId}/${outputId}.${ext}`,
@@ -543,6 +553,7 @@ export async function registerRoutes(
         cached: false,
         filename,
         downloadUrl: `/api/download/${sessionId}/${outputId}.${ext}`,
+        destPath: destPath || null,
         width,
         height,
         format: outputFormat,

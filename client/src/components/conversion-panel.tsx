@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Save, Loader2, AlertCircle, Sparkles, Link2, TriangleAlert, Info } from "lucide-react";
+import { Save, Loader2, AlertCircle, Sparkles, Link2, TriangleAlert, Info, FolderOpen, CheckCircle2 } from "lucide-react";
 import type { UploadResult, OutputFormat } from "@shared/schema";
 
 const RESOLUTION_TIERS = [512, 1024, 2048, 4096, 8192, 16384];
@@ -112,9 +112,14 @@ interface ConversionPanelProps {
   downloadUrl: string | null;
   downloadFilename: string;
   error: string | null;
+  savedDestPath: string | null;
+  outputPath: string;
+  onBrowseOutputPath: (defaultFilename: string, ext: string) => void;
   onConvert: (format: OutputFormat, width: number, height: number) => void;
   onSettingsChange?: () => void;
 }
+
+const hasElectronAPI = typeof window !== "undefined" && !!(window as any).electronAPI;
 
 export function ConversionPanel({
   uploadResult,
@@ -124,6 +129,9 @@ export function ConversionPanel({
   downloadUrl,
   downloadFilename,
   error,
+  savedDestPath,
+  outputPath,
+  onBrowseOutputPath,
   onConvert,
   onSettingsChange,
 }: ConversionPanelProps) {
@@ -341,6 +349,36 @@ export function ConversionPanel({
             </div>
           </div>
 
+          {hasElectronAPI && (
+            <div className="space-y-1.5">
+              <Label className="text-xs">Output File</Label>
+              <div className="flex gap-2">
+                <Input
+                  readOnly
+                  value={outputPath}
+                  placeholder="Choose output file..."
+                  className="text-xs h-8 flex-1 cursor-default"
+                  data-testid="input-output-path"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-3 shrink-0"
+                  onClick={() => {
+                    const ext = format;
+                    const defaultName = `cubemap_hdri_${width}x${height}.${ext}`;
+                    onBrowseOutputPath(defaultName, ext);
+                  }}
+                  disabled={isConverting}
+                  data-testid="button-browse-output"
+                >
+                  <FolderOpen className="w-3.5 h-3.5 mr-1.5" />
+                  Browse
+                </Button>
+              </div>
+            </div>
+          )}
+
           {isConverting ? (
             <div className="space-y-2">
               <Progress value={progress} className="h-2" data-testid="progress-conversion" />
@@ -349,6 +387,13 @@ export function ConversionPanel({
                 <span data-testid="text-conversion-stage">
                   {conversionStage || "Starting conversion..."}{progress > 0 && progress < 100 ? ` ${Math.round(progress)}%` : ""}
                 </span>
+              </div>
+            </div>
+          ) : savedDestPath ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 p-3 rounded-md bg-green-500/10 text-green-700 dark:text-green-400 text-xs" data-testid="text-saved-dest">
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <span className="break-all">Saved to {savedDestPath}</span>
               </div>
             </div>
           ) : downloadUrl ? (
@@ -371,7 +416,7 @@ export function ConversionPanel({
             <Button
               className="w-full"
               onClick={() => onConvert(format, width, height)}
-              disabled={isConverting}
+              disabled={isConverting || (hasElectronAPI && !outputPath)}
               data-testid="button-convert"
             >
               <Sparkles className="w-4 h-4 mr-1.5" />
