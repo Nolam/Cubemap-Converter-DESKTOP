@@ -206,7 +206,7 @@ export default function Home() {
               <h2 className="text-3xl font-bold tracking-tight" data-testid="text-hero-title">
                 Convert DDS Cubemaps to HDRI
               </h2>
-              <p className="text-muted-foreground text-base leading-relaxed">Upload a DDS cubemap file containing all 6 faces, or upload each face individually. Export in multiple formats, such as Radiance HDR or OpenEXR.</p>
+              <p className="text-muted-foreground text-base leading-relaxed">Open a DDS cubemap file containing all 6 faces, or load each face individually. Export in multiple formats, such as Radiance HDR or OpenEXR.</p>
             </div>
 
             <FileUploadZone onUploadComplete={handleUploadComplete} />
@@ -246,12 +246,12 @@ export default function Home() {
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div>
                 <h2 className="text-xl font-semibold tracking-tight" data-testid="text-upload-title">
-                  Cubemap Uploaded
+                  Cubemap Loaded
                 </h2>
                 <p className="text-sm text-muted-foreground mt-0.5">
                   {uploadResult.mode === "single"
                     ? "Single DDS file with all cubemap faces"
-                    : `${uploadResult.faces.length} individual face files uploaded`}
+                    : `${uploadResult.faces.length} individual face files loaded`}
                   {uploadResult.faceSize > 0 && (
                     <span> &middot; {uploadResult.faceSize}x{uploadResult.faceSize}px per face</span>
                   )}

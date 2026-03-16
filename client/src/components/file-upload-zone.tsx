@@ -127,7 +127,7 @@ export function FileUploadZone({ onUploadComplete }: FileUploadZoneProps) {
 
         xhr.upload.addEventListener("loadend", () => {
           setUploadStage("processing");
-          setAllSteps([{ label: "Waiting for server to process file...", status: "done" }]);
+          setAllSteps([{ label: "Analyzing file...", status: "done" }]);
           setVisibleStepCount(1);
         });
 
@@ -138,26 +138,26 @@ export function FileUploadZone({ onUploadComplete }: FileUploadZoneProps) {
             if (xhr.status >= 200 && xhr.status < 300) {
               resolve(data);
             } else {
-              reject({ message: data.message || `Server error (${xhr.status})`, steps: data.processingSteps });
+              reject({ message: data.message || `Error (${xhr.status})`, steps: data.processingSteps });
             }
           } catch {
-            reject({ message: `Invalid response from server (${xhr.status})` });
+            reject({ message: `Unexpected error (${xhr.status})` });
           }
         });
 
         xhr.addEventListener("error", () => {
           xhrRef.current = null;
-          reject({ message: "Network error — check your connection and try again" });
+          reject({ message: "Something went wrong — please try again" });
         });
 
         xhr.addEventListener("timeout", () => {
           xhrRef.current = null;
-          reject({ message: "Upload timed out — the file may be too large or the server is busy" });
+          reject({ message: "Processing timed out — the file may be too large" });
         });
 
         xhr.addEventListener("abort", () => {
           xhrRef.current = null;
-          reject({ message: "Upload was cancelled" });
+          reject({ message: "Cancelled" });
         });
 
         xhr.open("POST", url);
@@ -204,7 +204,7 @@ export function FileUploadZone({ onUploadComplete }: FileUploadZoneProps) {
           setUploadStage("processing");
           await animateSteps(errSteps);
         }
-        setError(err.message || "Failed to process upload");
+        setError(err.message || "Failed to load file");
         setUploadStage("idle");
         setAllSteps([]);
         setVisibleStepCount(0);
@@ -383,7 +383,7 @@ export function FileUploadZone({ onUploadComplete }: FileUploadZoneProps) {
                 {filledCount}/6 faces selected
               </p>
               <p className="text-[11px] text-muted-foreground/70 mt-0.5">
-                You can choose which coordinate system you're using after uploading
+                You can choose which coordinate system you're using after loading
               </p>
             </div>
             <Button
@@ -391,7 +391,7 @@ export function FileUploadZone({ onUploadComplete }: FileUploadZoneProps) {
               disabled={filledCount < 6 || isUploading}
               data-testid="button-upload-individual"
             >
-              Upload All Faces
+              Load All Faces
             </Button>
           </div>
         </TabsContent>
@@ -405,10 +405,10 @@ export function FileUploadZone({ onUploadComplete }: FileUploadZoneProps) {
                 <FileIcon className="w-5 h-5 text-muted-foreground shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate" data-testid="text-upload-stage">
-                    Uploading {uploadFileName} ({formatFileSize(uploadFileSize)})
+                    Loading {uploadFileName} ({formatFileSize(uploadFileSize)})
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {uploadProgress}% uploaded
+                    {uploadProgress}% loaded
                   </p>
                 </div>
               </div>

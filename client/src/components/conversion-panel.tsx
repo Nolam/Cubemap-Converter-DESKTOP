@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Download, Loader2, AlertCircle, Sparkles, Link2, TriangleAlert, Info } from "lucide-react";
+import { Save, Loader2, AlertCircle, Sparkles, Link2, TriangleAlert, Info } from "lucide-react";
 import type { UploadResult, OutputFormat } from "@shared/schema";
 
 const RESOLUTION_TIERS = [512, 1024, 2048, 4096, 8192, 16384];
@@ -362,8 +362,8 @@ export function ConversionPanel({
                 data-testid="button-download"
               >
                 <a href={downloadUrl} download={downloadFilename}>
-                  <Download className="w-4 h-4 mr-1.5" />
-                  Download {downloadFilename}
+                  <Save className="w-4 h-4 mr-1.5" />
+                  Save {downloadFilename}
                 </a>
               </Button>
             </div>
