@@ -1,6 +1,7 @@
 import { app, BrowserWindow, shell, ipcMain, dialog } from "electron";
 import path from "path";
-import { fileURLToPath, pathToFileURL } from "url";
+import { fileURLToPath } from "url";
+import { fork } from "child_process";
 import http from "http";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -9,6 +10,7 @@ let mainWindow = null;
 let splashWindow = null;
 let serverPort = 0;
 let serverStarted = false;
+let serverProcess = null;
 
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
@@ -26,46 +28,44 @@ function findFreePort() {
   });
 }
 
-function waitForServer(port, maxAttempts = 60) {
+function startServerProcess(port) {
   return new Promise((resolve, reject) => {
-    let attempts = 0;
-    const check = () => {
-      attempts++;
-      const req = http.get(`http://127.0.0.1:${port}/`, (res) => {
+    const serverPath = path.join(__dirname, "..", "dist", "index.cjs");
+
+    serverProcess = fork(serverPath, [], {
+      env: {
+        ...process.env,
+        PORT: String(port),
+        NODE_ENV: "production",
+        USER_DATA_PATH: app.getPath("userData"),
+      },
+      stdio: ["pipe", "pipe", "pipe", "ipc"],
+    });
+
+    const timeout = setTimeout(() => {
+      serverProcess.kill();
+      reject(new Error("Server did not start in time"));
+    }, 30000);
+
+    serverProcess.on("message", (msg) => {
+      if (msg && msg.type === "ready") {
+        clearTimeout(timeout);
         resolve();
-      });
-      req.on("error", () => {
-        if (attempts >= maxAttempts) {
-          reject(new Error("Server did not start in time"));
-        } else {
-          setTimeout(check, 500);
-        }
-      });
-      req.setTimeout(2000, () => {
-        req.destroy();
-        if (attempts >= maxAttempts) {
-          reject(new Error("Server did not start in time"));
-        } else {
-          setTimeout(check, 500);
-        }
-      });
-    };
-    check();
+      }
+    });
+
+    serverProcess.on("error", (err) => {
+      clearTimeout(timeout);
+      reject(err);
+    });
+
+    serverProcess.on("exit", (code) => {
+      if (!serverStarted) {
+        clearTimeout(timeout);
+        reject(new Error(`Server exited with code ${code}`));
+      }
+    });
   });
-}
-
-async function startServer() {
-  serverPort = await findFreePort();
-
-  process.env.PORT = String(serverPort);
-  process.env.NODE_ENV = "production";
-  process.env.USER_DATA_PATH = app.getPath("userData");
-
-  const serverPath = path.join(__dirname, "..", "dist", "index.cjs");
-  await import(pathToFileURL(serverPath).href);
-
-  await waitForServer(serverPort);
-  serverStarted = true;
 }
 
 function createWindow() {
@@ -171,11 +171,20 @@ app.on("second-instance", () => {
 app.on("ready", async () => {
   createSplash();
   try {
-    await startServer();
+    serverPort = await findFreePort();
+    await startServerProcess(serverPort);
+    serverStarted = true;
     createWindow();
   } catch (err) {
     console.error("Failed to start:", err);
     app.quit();
+  }
+});
+
+app.on("before-quit", () => {
+  if (serverProcess) {
+    serverProcess.kill();
+    serverProcess = null;
   }
 });
 

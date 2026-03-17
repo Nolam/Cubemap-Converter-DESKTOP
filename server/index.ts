@@ -93,5 +93,8 @@ app.use((req, res, next) => {
   const host = process.env.NODE_ENV === "production" ? "127.0.0.1" : "0.0.0.0";
   httpServer.listen(port, host, () => {
     log(`serving on port ${port}`);
+    if (typeof process.send === "function") {
+      process.send({ type: "ready" });
+    }
   });
 })();
