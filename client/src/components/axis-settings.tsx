@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -48,10 +48,19 @@ interface AxisSettingsProps {
 
 export function AxisSettings({ config, onChange }: AxisSettingsProps) {
   const [expanded, setExpanded] = useState(false);
+  const lastCustomMapping = useRef<AxisMapping | null>(
+    config.presetId === "custom" ? { ...config.axisMapping } : null
+  );
 
   const handlePresetChange = useCallback((presetId: string) => {
     if (presetId === "custom") {
-      onChange({ ...config, presetId: "custom" });
+      onChange({
+        ...config,
+        presetId: "custom",
+        axisMapping: lastCustomMapping.current
+          ? { ...lastCustomMapping.current }
+          : { ...config.axisMapping },
+      });
       return;
     }
     const preset = coordinatePresets.find((p) => p.id === presetId);
@@ -74,6 +83,9 @@ export function AxisSettings({ config, onChange }: AxisSettingsProps) {
       [isPrimary ? pair.opposite : pair.key]: opposites[face],
     };
     const matched = findMatchingPreset(newMapping);
+    if (!matched) {
+      lastCustomMapping.current = { ...newMapping };
+    }
     onChange({
       ...config,
       presetId: matched ? matched.id : "custom",
