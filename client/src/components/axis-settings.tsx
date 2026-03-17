@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Settings2, RotateCw, Info, ArrowRight } from "lucide-react";
+import { Settings2, RotateCw, Info, ArrowRight, ChevronUp } from "lucide-react";
 import {
   cubemapFaceNames,
   cubemapFaceLabels,
@@ -89,101 +89,109 @@ export function AxisSettings({ config, onChange }: AxisSettingsProps) {
   const currentPreset = coordinatePresets.find((p) => p.id === config.presetId);
   const isCustom = config.presetId === "custom";
 
+  const panelOpen = isCustom && expanded;
+
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Settings2 className="w-4 h-4 text-muted-foreground" />
-          <h3 className="text-sm font-medium" data-testid="text-axis-settings-title">
-            Coordinate System
-          </h3>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent side="right" className="max-w-xs">
-                <p className="text-xs">
-                  Different 3D tools use different coordinate systems.
-                  Select the tool that generated your cubemap to ensure
-                  faces are mapped correctly during conversion.
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-        {isCustom && expanded && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setExpanded(false)}
-            className="h-7 px-2 text-xs"
-            data-testid="button-collapse-axis-settings"
-          >
-            Collapse
-          </Button>
-        )}
+      <div className="flex items-center gap-2">
+        <Settings2 className="w-4 h-4 text-muted-foreground" />
+        <h3 className="text-sm font-medium" data-testid="text-axis-settings-title">
+          Coordinate System
+        </h3>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Info className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent side="right" className="max-w-xs">
+              <p className="text-xs">
+                Different 3D tools use different coordinate systems.
+                Select the tool that generated your cubemap to ensure
+                faces are mapped correctly during conversion.
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
-      <div className={`flex gap-4 ${expanded ? "items-start flex-col sm:flex-row" : "flex-col"}`}>
-        <div className="space-y-2 shrink-0">
-          <div className="flex flex-wrap gap-1.5" data-testid="preset-buttons">
-            {coordinatePresets.map((preset) => (
-              <Button
-                key={preset.id}
-                variant={config.presetId === preset.id ? "default" : "outline"}
-                size="sm"
-                onClick={() => {
-                  handlePresetChange(preset.id);
-                  setExpanded(false);
-                }}
-                className="text-xs h-7 px-2.5"
-                data-testid={`button-preset-${preset.id}`}
-              >
-                {preset.label}
-              </Button>
-            ))}
+      <div className="space-y-2">
+        <div className="flex flex-wrap gap-1.5" data-testid="preset-buttons">
+          {coordinatePresets.map((preset) => (
             <Button
-              variant={isCustom ? "default" : "outline"}
+              key={preset.id}
+              variant={config.presetId === preset.id ? "default" : "outline"}
               size="sm"
               onClick={() => {
-                if (isCustom) {
-                  setExpanded(!expanded);
-                } else {
-                  handlePresetChange("custom");
-                  setExpanded(true);
-                }
+                handlePresetChange(preset.id);
+                setExpanded(false);
               }}
               className="text-xs h-7 px-2.5"
-              data-testid="button-preset-custom"
+              data-testid={`button-preset-${preset.id}`}
             >
-              Custom
+              {preset.label}
             </Button>
-          </div>
-
-          <p className="text-xs text-muted-foreground" data-testid="text-preset-description">
-            {isCustom
-              ? "Custom axis mapping"
-              : currentPreset
-              ? currentPreset.description
-              : "Select a coordinate system preset"}
-          </p>
+          ))}
+          <Button
+            variant={isCustom ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              if (isCustom) {
+                setExpanded(!expanded);
+              } else {
+                handlePresetChange("custom");
+                setExpanded(true);
+              }
+            }}
+            className="text-xs h-7 px-2.5"
+            data-testid="button-preset-custom"
+          >
+            Custom
+          </Button>
         </div>
 
-        {expanded && (
-          <Card className="p-4 space-y-3 flex-1 min-w-0">
+        <p className="text-xs text-muted-foreground" data-testid="text-preset-description">
+          {isCustom
+            ? "Custom axis mapping"
+            : currentPreset
+            ? currentPreset.description
+            : "Select a coordinate system preset"}
+        </p>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateRows: panelOpen ? "1fr" : "0fr",
+          transition: "grid-template-rows 280ms ease, opacity 280ms ease",
+          opacity: panelOpen ? 1 : 0,
+        }}
+      >
+        <div className="overflow-hidden min-h-0">
+          <Card className="p-4 space-y-3">
             <div className="flex items-center justify-between gap-2">
               <Label className="text-xs">Axis Assignments</Label>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleReset}
-                className="h-6 px-2 text-xs"
-                data-testid="button-reset-axis"
-              >
-                <RotateCw className="w-3 h-3 mr-1" />
-                Reset
-              </Button>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleReset}
+                  className="h-6 px-2 text-xs"
+                  data-testid="button-reset-axis"
+                >
+                  <RotateCw className="w-3 h-3 mr-1" />
+                  Reset
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setExpanded(false)}
+                  className="h-6 px-2 text-xs"
+                  data-testid="button-collapse-axis-settings"
+                >
+                  <ChevronUp className="w-3 h-3 mr-1" />
+                  Collapse
+                </Button>
+              </div>
             </div>
             <div className="space-y-2">
               {primaryAxes.map(({ key, opposite, label, oppositeLabel, desc }) => (
@@ -247,7 +255,7 @@ export function AxisSettings({ config, onChange }: AxisSettingsProps) {
               Changing either side automatically sets the opposite face.
             </p>
           </Card>
-        )}
+        </div>
       </div>
     </div>
   );
