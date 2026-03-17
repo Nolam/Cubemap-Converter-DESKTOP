@@ -89,6 +89,8 @@ export function EquirectangularPreview({ sessionId, axisConfig }: Equirectangula
             alt="Equirectangular preview"
             className={`w-full h-auto block transition-opacity duration-200 ${isLoading ? "opacity-40" : "opacity-100"}`}
             data-testid="img-equirect-preview"
+            draggable={false}
+            onDragStart={(e) => e.preventDefault()}
           />
         ) : (
           <div className="w-full aspect-[2/1] flex items-center justify-center bg-muted/30">
