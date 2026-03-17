@@ -68,25 +68,6 @@ export const coordinatePresets: CoordinatePreset[] = [
     },
   },
   {
-    id: "opengl",
-    label: "OpenGL",
-    description: "Right-handed, Y-up — front is -Z (RenderMan upper-left origin)",
-    handedness: "right",
-    axisMapping: {
-      right: "positiveX",
-      left: "negativeX",
-      up: "positiveY",
-      down: "negativeY",
-      front: "negativeZ",
-      back: "positiveZ",
-    },
-    faceImageCorrections: {
-      sides: "scaleY(-1)",
-      topBottom: "scaleY(-1)",
-      flipVertical: true,
-    },
-  },
-  {
     id: "spaceengine",
     label: "SpaceEngine",
     description: "Right-handed, Y-up — right is -Z, front is +X",
@@ -104,6 +85,25 @@ export const coordinatePresets: CoordinatePreset[] = [
       topBottom: "scaleX(-1)",
       swapTopBottom: true,
       swapLeftRight: true,
+    },
+  },
+  {
+    id: "opengl",
+    label: "OpenGL",
+    description: "Right-handed, Y-up — front is -Z (RenderMan upper-left origin)",
+    handedness: "right",
+    axisMapping: {
+      right: "positiveX",
+      left: "negativeX",
+      up: "positiveY",
+      down: "negativeY",
+      front: "negativeZ",
+      back: "positiveZ",
+    },
+    faceImageCorrections: {
+      sides: "scaleY(-1)",
+      topBottom: "scaleY(-1)",
+      flipVertical: true,
     },
   },
 ];
