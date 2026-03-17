@@ -39,7 +39,7 @@ function forkServer(port) {
         NODE_ENV: "production",
         USER_DATA_PATH: app.getPath("userData"),
       },
-      stdio: ["pipe", "pipe", "pipe", "ipc"],
+      stdio: ["ignore", "inherit", "inherit", "ipc"],
     });
 
     const timeout = setTimeout(() => {
