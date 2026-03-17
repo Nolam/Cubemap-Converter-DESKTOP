@@ -203,7 +203,7 @@ export default function Home() {
   }, [uploadResult]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
       <WelcomePopup />
       <header className="border-b sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
@@ -250,7 +250,7 @@ export default function Home() {
           </div>
         </div>
       </header>
-      <main className={`max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 ${uploadResult ? "py-4" : "py-8"}`}>
+      <main className={`flex-1 overflow-y-auto max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 ${uploadResult ? "py-4" : "py-8"}`}>
         {!uploadResult ? (
           <div className="space-y-8">
             <div className="text-center max-w-2xl mx-auto space-y-3">
@@ -364,14 +364,12 @@ export default function Home() {
           </div>
         )}
       </main>
-      {!uploadResult && (
-        <footer className="border-t mt-16">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4 text-xs text-muted-foreground">
-            <span>Designed by David Parrella - <a href="https://www.paypal.com/paypalme/parrella/" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">Click Here</a> to buy me a Coffee! :)</span>
-            <span>Supports DDS cubemap formats with HDR data</span>
-          </div>
-        </footer>
-      )}
+      <footer className="border-t shrink-0">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4 text-xs text-muted-foreground">
+          <span>Designed by David Parrella - <a href="https://www.paypal.com/paypalme/parrella/" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">Click Here</a> to buy me a Coffee! :)</span>
+          <span>Supports DDS cubemap formats with HDR data</span>
+        </div>
+      </footer>
     </div>
   );
 }
