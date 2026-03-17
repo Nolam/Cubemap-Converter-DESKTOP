@@ -28,7 +28,7 @@ function findFreePort() {
   });
 }
 
-function startServerProcess(port) {
+function forkServer(port) {
   return new Promise((resolve, reject) => {
     const serverPath = path.join(__dirname, "..", "dist", "index.cjs");
 
@@ -67,6 +67,12 @@ function startServerProcess(port) {
     });
   });
 }
+
+const serverReadyPromise = (async () => {
+  serverPort = await findFreePort();
+  await forkServer(serverPort);
+  serverStarted = true;
+})();
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -171,9 +177,7 @@ app.on("second-instance", () => {
 app.on("ready", async () => {
   createSplash();
   try {
-    serverPort = await findFreePort();
-    await startServerProcess(serverPort);
-    serverStarted = true;
+    await serverReadyPromise;
     createWindow();
   } catch (err) {
     console.error("Failed to start:", err);
