@@ -311,38 +311,44 @@ export function FileUploadZone({ onUploadComplete }: FileUploadZoneProps) {
 
           <Progress value={processingPercent} className="h-2" data-testid="progress-processing" />
 
-          <div className="space-y-1.5 max-h-32 overflow-y-auto" data-testid="list-processing-steps">
-            {visibleSteps.map((s, i) => {
-              const isCurrent = i === visibleStepCount - 1 && visibleStepCount < allSteps.length;
-              const isComplete = i < visibleStepCount - 1 || (i === visibleStepCount - 1 && visibleStepCount === allSteps.length);
-              const isError = s.status === "error";
-              return (
-                <div
-                  key={i}
-                  className={`flex items-center gap-2 text-xs transition-all duration-200 ${
-                    isError
-                      ? "text-destructive font-medium"
-                      : isComplete
-                      ? "text-muted-foreground"
-                      : isCurrent
-                      ? "text-foreground font-medium"
-                      : "text-muted-foreground"
-                  }`}
-                  data-testid={`step-${i + 1}`}
-                >
-                  {isError ? (
-                    <AlertCircle className="w-3.5 h-3.5 text-destructive shrink-0" />
-                  ) : isComplete ? (
-                    <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
-                  ) : isCurrent ? (
-                    <Loader2 className="w-3.5 h-3.5 text-primary animate-spin shrink-0" />
-                  ) : (
-                    <div className="w-3.5 h-3.5 rounded-full border border-muted-foreground/30 shrink-0" />
-                  )}
-                  <span className="truncate">{s.label}</span>
-                </div>
-              );
-            })}
+          <div
+            className="max-h-32 overflow-hidden flex flex-col-reverse"
+            style={{ maskImage: "linear-gradient(to bottom, transparent 0%, black 30%)" }}
+            data-testid="list-processing-steps"
+          >
+            <div className="space-y-1.5">
+              {visibleSteps.map((s, i) => {
+                const isCurrent = i === visibleStepCount - 1 && visibleStepCount < allSteps.length;
+                const isComplete = i < visibleStepCount - 1 || (i === visibleStepCount - 1 && visibleStepCount === allSteps.length);
+                const isError = s.status === "error";
+                return (
+                  <div
+                    key={i}
+                    className={`flex items-center gap-2 text-xs transition-all duration-200 ${
+                      isError
+                        ? "text-destructive font-medium"
+                        : isComplete
+                        ? "text-muted-foreground"
+                        : isCurrent
+                        ? "text-foreground font-medium"
+                        : "text-muted-foreground"
+                    }`}
+                    data-testid={`step-${i + 1}`}
+                  >
+                    {isError ? (
+                      <AlertCircle className="w-3.5 h-3.5 text-destructive shrink-0" />
+                    ) : isComplete ? (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
+                    ) : isCurrent ? (
+                      <Loader2 className="w-3.5 h-3.5 text-primary animate-spin shrink-0" />
+                    ) : (
+                      <div className="w-3.5 h-3.5 rounded-full border border-muted-foreground/30 shrink-0" />
+                    )}
+                    <span className="truncate">{s.label}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}

@@ -212,6 +212,8 @@ function FaceCard({
         alt={cubemapFaceLabels[face]}
         className="w-full h-full object-cover rounded-md transition-transform duration-300"
         loading="lazy"
+        draggable={false}
+        onDragStart={(e) => e.preventDefault()}
         style={transform ? { transform } : undefined}
       />
       <div className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent rounded-b-md ${compact ? "p-0.5" : "p-1"} opacity-0 group-hover:opacity-100 transition-opacity duration-150`}>

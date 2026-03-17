@@ -125,126 +125,130 @@ export function AxisSettings({ config, onChange }: AxisSettingsProps) {
         )}
       </div>
 
-      <div className="flex flex-wrap gap-1.5" data-testid="preset-buttons">
-        {coordinatePresets.map((preset) => (
-          <Button
-            key={preset.id}
-            variant={config.presetId === preset.id ? "default" : "outline"}
-            size="sm"
-            onClick={() => {
-              handlePresetChange(preset.id);
-              setExpanded(false);
-            }}
-            className="text-xs h-7 px-2.5"
-            data-testid={`button-preset-${preset.id}`}
-          >
-            {preset.label}
-          </Button>
-        ))}
-        <Button
-          variant={isCustom ? "default" : "outline"}
-          size="sm"
-          onClick={() => {
-            if (isCustom) {
-              setExpanded(!expanded);
-            } else {
-              handlePresetChange("custom");
-              setExpanded(true);
-            }
-          }}
-          className="text-xs h-7 px-2.5"
-          data-testid="button-preset-custom"
-        >
-          Custom
-        </Button>
-      </div>
-
-      <p className="text-xs text-muted-foreground" data-testid="text-preset-description">
-        {isCustom
-          ? "Custom axis mapping"
-          : currentPreset
-          ? currentPreset.description
-          : "Select a coordinate system preset"}
-      </p>
-
-      {expanded && (
-        <Card className="p-4 space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <Label className="text-xs">Axis Assignments</Label>
+      <div className={`flex gap-4 ${expanded ? "items-start flex-col sm:flex-row" : "flex-col"}`}>
+        <div className="space-y-2 shrink-0">
+          <div className="flex flex-wrap gap-1.5" data-testid="preset-buttons">
+            {coordinatePresets.map((preset) => (
+              <Button
+                key={preset.id}
+                variant={config.presetId === preset.id ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  handlePresetChange(preset.id);
+                  setExpanded(false);
+                }}
+                className="text-xs h-7 px-2.5"
+                data-testid={`button-preset-${preset.id}`}
+              >
+                {preset.label}
+              </Button>
+            ))}
             <Button
-              variant="ghost"
+              variant={isCustom ? "default" : "outline"}
               size="sm"
-              onClick={handleReset}
-              className="h-6 px-2 text-xs"
-              data-testid="button-reset-axis"
+              onClick={() => {
+                if (isCustom) {
+                  setExpanded(!expanded);
+                } else {
+                  handlePresetChange("custom");
+                  setExpanded(true);
+                }
+              }}
+              className="text-xs h-7 px-2.5"
+              data-testid="button-preset-custom"
             >
-              <RotateCw className="w-3 h-3 mr-1" />
-              Reset to Default
+              Custom
             </Button>
           </div>
-          <div className="space-y-2">
-            {primaryAxes.map(({ key, opposite, label, oppositeLabel, desc }) => (
-              <div key={key} className="grid grid-cols-[50px_1fr_20px_50px_1fr] items-center gap-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Label className="text-xs text-muted-foreground cursor-help text-right">
-                        {label}
-                      </Label>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="text-xs">{desc}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <Select
-                  value={config.axisMapping[key]}
-                  onValueChange={(v) => handleAxisChange(key, v as CubemapFaceName)}
-                >
-                  <SelectTrigger
-                    className="h-8 text-xs"
-                    data-testid={`select-axis-${key}`}
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {cubemapFaceNames.map((face) => (
-                      <SelectItem key={face} value={face} className="text-xs">
-                        {cubemapFaceLabels[face]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <ArrowRight className="w-3 h-3 text-muted-foreground mx-auto" />
-                <Label className="text-xs text-muted-foreground text-right">
-                  {oppositeLabel}
-                </Label>
-                <Select
-                  value={config.axisMapping[opposite]}
-                  onValueChange={(v) => handleAxisChange(opposite, v as CubemapFaceName)}
-                >
-                  <SelectTrigger
-                    className="h-8 text-xs"
-                    data-testid={`select-axis-${opposite}`}
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {cubemapFaceNames.map((face) => (
-                      <SelectItem key={face} value={face} className="text-xs">
-                        {cubemapFaceLabels[face]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Changing either side automatically sets the opposite face.
+
+          <p className="text-xs text-muted-foreground" data-testid="text-preset-description">
+            {isCustom
+              ? "Custom axis mapping"
+              : currentPreset
+              ? currentPreset.description
+              : "Select a coordinate system preset"}
           </p>
-        </Card>
-      )}
+        </div>
+
+        {expanded && (
+          <Card className="p-4 space-y-3 flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2">
+              <Label className="text-xs">Axis Assignments</Label>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleReset}
+                className="h-6 px-2 text-xs"
+                data-testid="button-reset-axis"
+              >
+                <RotateCw className="w-3 h-3 mr-1" />
+                Reset
+              </Button>
+            </div>
+            <div className="space-y-2">
+              {primaryAxes.map(({ key, opposite, label, oppositeLabel, desc }) => (
+                <div key={key} className="grid grid-cols-[40px_1fr_16px_40px_1fr] items-center gap-1.5">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Label className="text-xs text-muted-foreground cursor-help text-right">
+                          {label}
+                        </Label>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs">{desc}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <Select
+                    value={config.axisMapping[key]}
+                    onValueChange={(v) => handleAxisChange(key, v as CubemapFaceName)}
+                  >
+                    <SelectTrigger
+                      className="h-7 text-xs"
+                      data-testid={`select-axis-${key}`}
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cubemapFaceNames.map((face) => (
+                        <SelectItem key={face} value={face} className="text-xs">
+                          {cubemapFaceLabels[face]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <ArrowRight className="w-3 h-3 text-muted-foreground mx-auto" />
+                  <Label className="text-xs text-muted-foreground text-right">
+                    {oppositeLabel}
+                  </Label>
+                  <Select
+                    value={config.axisMapping[opposite]}
+                    onValueChange={(v) => handleAxisChange(opposite, v as CubemapFaceName)}
+                  >
+                    <SelectTrigger
+                      className="h-7 text-xs"
+                      data-testid={`select-axis-${opposite}`}
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cubemapFaceNames.map((face) => (
+                        <SelectItem key={face} value={face} className="text-xs">
+                          {cubemapFaceLabels[face]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Changing either side automatically sets the opposite face.
+            </p>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }

@@ -303,11 +303,6 @@ export default function Home() {
               </Badge>
             </div>
 
-            <AxisSettings
-              config={axisConfig}
-              onChange={handleAxisConfigChange}
-            />
-
             <div className="grid grid-cols-[2fr_3fr] gap-6 items-start">
               <div className="space-y-3">
                 <div className="space-y-2">
@@ -339,7 +334,11 @@ export default function Home() {
                 />
               </div>
 
-              <div className="overflow-y-auto max-h-[calc(100vh-10rem)]">
+              <div className="space-y-4">
+                <AxisSettings
+                  config={axisConfig}
+                  onChange={handleAxisConfigChange}
+                />
                 <ConversionPanel
                   uploadResult={uploadResult}
                   isConverting={isConverting}
