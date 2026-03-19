@@ -366,7 +366,7 @@ export default function Home() {
       </main>
       <footer className="border-t shrink-0">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4 text-xs text-muted-foreground">
-          <span>Designed by David Parrella - <a href="https://www.paypal.com/paypalme/parrella/" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">Click Here</a> to buy me a Coffee! :)</span>
+          <span>v{__APP_VERSION__} | Designed by David Parrella - <a href="https://www.paypal.com/paypalme/parrella/" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">Click Here</a> to buy me a Coffee! :)</span>
           <span>Supports DDS cubemap formats with HDR data</span>
         </div>
       </footer>
