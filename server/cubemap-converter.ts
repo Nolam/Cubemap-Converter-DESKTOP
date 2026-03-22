@@ -152,7 +152,7 @@ export function cubemapToEquirectangular(
 
     for (let x = 0; x < outputWidth; x++) {
       const u = x / outputWidth;
-      const phi = u * 2 * Math.PI - Math.PI / 2;
+      const phi = u * 2 * Math.PI + Math.PI / 2;
 
       let dx = Math.sin(theta) * Math.cos(phi);
       let dy = Math.cos(theta);
