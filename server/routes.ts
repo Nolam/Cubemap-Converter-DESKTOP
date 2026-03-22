@@ -99,7 +99,7 @@ const sessions = new Map<string, SessionData>();
 setInterval(() => {
   const now = Date.now();
   for (const [id, session] of sessions) {
-    if (now - session.createdAt > 15 * 60 * 1000) {
+    if (now - session.createdAt > 24 * 60 * 60 * 1000) {
       sessions.delete(id);
       const sessionDir = path.join(UPLOAD_DIR, id);
       if (fs.existsSync(sessionDir)) {
@@ -359,6 +359,8 @@ export async function registerRoutes(
       if (!session) {
         return res.status(404).json({ message: "Session not found" });
       }
+
+      session.createdAt = Date.now();
 
       const faceName = face as CubemapFaceName;
       const faceData = session.faces.get(faceName);
