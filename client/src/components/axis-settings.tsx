@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Settings2, RotateCw, Info, ArrowRight, ChevronUp } from "lucide-react";
+import { Settings2, RotateCw, Info, ArrowRight, ChevronUp, ChevronDown } from "lucide-react";
 import {
   cubemapFaceNames,
   cubemapFaceLabels,
@@ -154,10 +154,15 @@ export function AxisSettings({ config, onChange }: AxisSettingsProps) {
                 setExpanded(true);
               }
             }}
-            className="text-xs h-7 px-2.5"
+            className="text-xs h-7 px-2.5 gap-1"
             data-testid="button-preset-custom"
           >
             Custom
+            {isCustom && (
+              expanded
+                ? <ChevronUp className="w-3 h-3" />
+                : <ChevronDown className="w-3 h-3" />
+            )}
           </Button>
         </div>
 
