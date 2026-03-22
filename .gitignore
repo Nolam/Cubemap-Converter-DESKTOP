@@ -6,3 +6,5 @@ vite.config.ts.*
 *.tar.gz
 attached_assets/
 outputs/
+.replit
+replit.md
